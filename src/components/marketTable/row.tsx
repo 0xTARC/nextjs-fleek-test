@@ -1,10 +1,10 @@
 import { FC } from 'react'
-import { table } from '../component.styles'
+import { table } from '~/components/component.styles'
 import clsx from 'clsx'
 import { MarketTableInfo } from '.'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { MarketInfo } from '../market-info'
-import { useNavigate } from '@remix-run/react'
+import { useRouter } from "next/router";
 import { Apy } from '../apy'
 import { convertMonetaryFormat } from '~/utils/price'
 import { Button } from '../button'
@@ -16,10 +16,10 @@ type RowProps = {
 
 export const Row: FC<RowProps> = ({ market }) => {
   const { isMobile } = useScreenDetector()
-  const navigate = useNavigate()
+  const router = useRouter()
   const navigateToCreateMarket = (token0: string, token1: string, fee: number) => {
     const url = `/new-market?token0=${token0}&token1=${token1}&fee=${fee}`
-    navigate(url)
+    router.push(url)
   }
   const token0Address = (market.token0WithLogoUri as TokenInfo).address
   const token1Address = (market.token1WithLogoUri as TokenInfo).address

@@ -6,7 +6,7 @@ import { useSortableTable } from '../table/useSortableTable'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { Row } from './row'
 import { Button } from '@radix-ui/themes'
-import { Link } from '@remix-run/react'
+import Link from 'next/link'
 import { sortTokenAddressPair } from '~/utils/tokens'
 import { getAddress, zeroAddress } from 'viem'
 
@@ -117,7 +117,7 @@ export const MarketTable: FC<MarketTableProps> = ({
         {fee != null ? (
           <div className="mt-4">
             <Button variant="soft" color="purple">
-              <Link to={`/new-market?token0=${token0Address}&token1=${token1Address}&fee=${fee}`}>
+              <Link href={`/new-market?token0=${token0Address}&token1=${token1Address}&fee=${fee}`}>
                 Create Market
               </Link>
             </Button>

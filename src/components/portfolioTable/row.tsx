@@ -7,7 +7,7 @@ import { DropdownMenu } from '@radix-ui/themes'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { MarketInfo } from '../market-info'
 import { convertMonetaryFormat } from '~/utils/price'
-import { useNavigate } from '@remix-run/react'
+import { useRouter } from 'next/router'
 import { Button } from '../button'
 import { Apy } from '../apy'
 
@@ -17,8 +17,8 @@ type RowProps = {
 
 export const Row: FC<RowProps> = ({ portfolioInfo }) => {
   const { isMobile } = useScreenDetector()
-  const navigate = useNavigate()
-  const navigateToDepositOrDeposit = (url: string) => navigate(url)
+  const router = useRouter()
+  const navigateToDepositOrDeposit = (url: string) => router.push(url)
   return (
     <tr>
       {/* Market */}

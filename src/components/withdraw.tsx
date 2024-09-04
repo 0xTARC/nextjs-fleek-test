@@ -10,9 +10,9 @@ import { formatPpaAccountsForPortfolioInfo } from '~/utils/portfolio'
 import { TokenInput } from './token-input'
 import { DialogConfirmationWithdraw } from './dialog-confirm-withdraw'
 import { PortfolioInfo } from './portfolioTable'
-import { useNavigate } from '@remix-run/react'
+import { useRouter } from "next/router";
 import { useReadContracts } from 'wagmi'
-import { abi as CollateralTrackerAbi } from '../abis/CollateralTracker'
+import { abi as CollateralTrackerAbi } from '~/abis/CollateralTracker'
 
 type WithdrawProps = {
   address: Address | undefined
@@ -38,7 +38,7 @@ export const Withdraw: FC<WithdrawProps> = ({
   const [withdrawTokenAmount, setWithdrawTokenAmount] = useState<string>('')
   const ethPriceUSDFormatted = Number(ethPriceUSD.data?.bundle?.ethPriceUSD)
   const [maximumWithdrawBalance, setMaximumWithdrawBalance] = useState<bigint>(BigInt(0))
-  const navigate = useNavigate()
+  const router = useRouter();
 
   const userDepositedMarkets = useQuery({
     queryKey: ['vaultsWithDepositsFromAccount', chainId, address],
@@ -171,10 +171,10 @@ export const Withdraw: FC<WithdrawProps> = ({
         )
         setMaximumWithdrawBalance(selectedToken !== undefined ? collateralAssets : BigInt(0))
       } else {
-        navigate(`?type=withdraw`)
+        router.push(`?type=withdraw`)
       }
     }
-  }, [depositedMarkets, navigate, paramMarketId, paramTokenId, selectedMarket, selectedToken])
+  }, [depositedMarkets, paramMarketId, paramTokenId, router, selectedMarket, selectedToken])
 
   useEffect(() => {
     if (paramMarketId !== null && selectedMarket === undefined && depositedMarkets.length > 0) {

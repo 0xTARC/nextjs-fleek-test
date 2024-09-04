@@ -35,7 +35,7 @@ export const TxExplorerButton: FC<TxExplorerButtonProps> = ({ txHash, variant = 
     return (
       <Button
         variant="flat"
-        onClick={() => window.open(`${chainToExplorer[chainId]}/tx/${txHash}`, '_blank')}>
+        onClick={() => typeof window !== 'undefined' && window.open(`${chainToExplorer[chainId]}/tx/${txHash}`, '_blank')}>
         <GoLinkExternal />
       </Button>
     )
@@ -43,7 +43,7 @@ export const TxExplorerButton: FC<TxExplorerButtonProps> = ({ txHash, variant = 
     return (
       <Button
         variant="flat"
-        onClick={() => window.open(`${chainToExplorer[chainId]}/tx/${txHash}`, '_blank')}
+        onClick={() => typeof window !== 'undefined' && window.open(`${chainToExplorer[chainId]}/tx/${txHash}`, '_blank')}
         className="flex gap-1">
         View on {chainToExplorerName[chainId]}
         <GoLinkExternal />

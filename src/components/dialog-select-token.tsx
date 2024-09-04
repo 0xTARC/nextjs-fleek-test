@@ -9,7 +9,7 @@ import { Loading } from './loading'
 import { MarketInfo } from './market-info'
 import clsx from 'clsx'
 import { TokenRelatedMarketInfo } from './deposit'
-import { useLocation, useNavigate } from '@remix-run/react'
+import { useRouter } from "next/router";
 import {
   handleUrlSearchPramPreserveUpdate,
   handleUrlSearchPramRemoveKeys,
@@ -38,16 +38,16 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
   tokenRelatedVaultInfo,
   setSelectedMarket,
   selectedMarket,
-  paramTokenId,
+  // paramTokenId,
   paramMarketId,
   isLoadingParamToken,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [isReSelectedTokenAndMarket, setIsReSelectedTokenAndMarket] = useState<boolean>(false)
   const [step, setStep] = useState<number>(1)
-  const query = new URLSearchParams(useLocation().search)
+  const router = useRouter()
+  const query = new URLSearchParams(router.asPath.split("?")[1] || "")
   const type = query.get('type')
-  const navigate = useNavigate()
 
   const selectToken = (token: TokenApyInfo) => {
     let url = `?type=${type}`
@@ -56,25 +56,25 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
       setIsReSelectedTokenAndMarket(false)
     }
     if (paramMarketId !== null) {
-      handleUrlSearchPramRemoveKeys(navigate, query, ['marketId'])
+      handleUrlSearchPramRemoveKeys(router, query, ['marketId'])
     }
 
     setSelectedToken(token)
     url = `${url}&tokenId=${token.tokenAddress}`
-    navigate(url)
+    router.push(url)
     setStep(2)
   }
 
   const clearSelectedToken = () => {
     setSelectedToken(undefined)
     setSelectedMarket(undefined)
-    navigate(`?type=${type}`)
+    router.push(`?type=${type}`)
     setStep(1)
   }
 
   const selectMarket = (market: TokenRelatedMarketInfo) => {
     setSelectedMarket(market)
-    handleUrlSearchPramPreserveUpdate(navigate, query, 'marketId', market.poolId)
+    handleUrlSearchPramPreserveUpdate(router, query, 'marketId', market.poolId)
     setStep(1)
     setIsDialogOpen(false)
   }
@@ -148,7 +148,7 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
         </>
       )
     }
-  }, [step, tokenList, tokenRelatedVaultInfo])
+  }, [clearSelectedToken, isLoadingTokenRelatedVaults, selectMarket, selectToken, selectedToken, step, tokenList, tokenRelatedVaultInfo])
 
   return (
     <Dialog.Root open={isDialogOpen}>

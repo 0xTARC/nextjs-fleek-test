@@ -1,11 +1,11 @@
 import { FC } from 'react'
-import { Link } from '@remix-run/react'
 import { TokenPair } from './token-pair'
 import { TokenInfo } from '@uniswap/token-lists'
 import { PiCaretRightThin } from 'react-icons/pi'
 import { TokenApyInfo } from '~/utils/userAccount'
 import clsx from 'clsx'
 import { Apy } from './apy'
+import Link from 'next/link'
 
 type MarketInfoProps = {
   marketId: string
@@ -102,7 +102,7 @@ export const MarketInfo: FC<MarketInfoProps> = ({
             {renderTokenInfo()}
           </div>
         ) : (
-          <Link to={`/markets/${marketId}`} className="-mt-1 text-xl text-slate-300">
+          <Link href={`/markets?marketAddress=${marketId}`} className="-mt-1 text-xl text-slate-300">
             <div className="flex flex-row items-center gap-x-2">
               {renderTokenPairIcons()}
               {renderTokenInfo()}
@@ -118,7 +118,7 @@ export const MarketInfo: FC<MarketInfoProps> = ({
         {hideHyperLink ? (
           renderTokenInfo()
         ) : (
-          <Link to={`/markets/${marketId}`}>{renderTokenInfo()}</Link>
+          <Link href={`/markets?marketAddress=${marketId}`}>{renderTokenInfo()}</Link>
         )}
       </div>
     )

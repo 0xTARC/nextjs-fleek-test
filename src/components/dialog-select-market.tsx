@@ -13,7 +13,6 @@ import { DialogTitle } from "./dialog-title";
 import { MarketInfo } from "./market-info";
 import { PortfolioInfo } from "./portfolioTable";
 import { TokenInfoWithApy } from "./token-info-with-apy";
-// import { useLocation, useNavigate } from '@remix-run/react'
 import { useRouter } from "next/router";
 import Skeleton from "react-loading-skeleton";
 import {
@@ -37,7 +36,7 @@ export const DialogSelectMarket: FC<DialogSelectMarketProps> = ({
   userDepositedMarkets,
   setSelectedMarket,
   selectedMarket,
-  paramTokenId,
+  // paramTokenId,
   paramMarketId,
   setMaximumWithdrawBalance,
   isLoadingParamMarket,
