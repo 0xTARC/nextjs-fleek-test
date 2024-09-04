@@ -7,7 +7,7 @@ export const handleUrlSearchPramUpdate = (
 ) => {
   const newQuery = new URLSearchParams()
   newQuery.set(key, value)
-  router.push(`${router.pathname}?${newQuery.toString()}`)
+  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
 }
 
 export const handleUrlSearchPramPreserveUpdate = (
@@ -18,7 +18,7 @@ export const handleUrlSearchPramPreserveUpdate = (
 ) => {
   const newQuery = new URLSearchParams(query)
   newQuery.set(key, value)
-  router.push(`${router.pathname}?${newQuery.toString()}`)
+  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
 }
 
 export const handleUrlSearchPramRemoveKeys = (
@@ -28,5 +28,5 @@ export const handleUrlSearchPramRemoveKeys = (
 ) => {
   const newQuery = new URLSearchParams(query)
   keys.forEach((key) => newQuery.delete(key))
-  router.push(`${router.pathname}?${newQuery.toString()}`)
+  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
 }

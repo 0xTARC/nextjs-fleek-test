@@ -9,7 +9,7 @@ import { Loading } from './loading'
 import { MarketInfo } from './market-info'
 import clsx from 'clsx'
 import { TokenRelatedMarketInfo } from './deposit'
-import { useRouter } from "next/router";
+import { useRouter } from 'next/router'
 import {
   handleUrlSearchPramPreserveUpdate,
   handleUrlSearchPramRemoveKeys,
@@ -38,7 +38,7 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
   tokenRelatedVaultInfo,
   setSelectedMarket,
   selectedMarket,
-  // paramTokenId,
+  paramTokenId,
   paramMarketId,
   isLoadingParamToken,
 }) => {
@@ -47,6 +47,7 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
   const [step, setStep] = useState<number>(1)
   const router = useRouter()
   const query = new URLSearchParams(router.asPath.split("?")[1] || "")
+  console.log('query: ', query)
   const type = query.get('type')
 
   const selectToken = (token: TokenApyInfo) => {
@@ -60,15 +61,17 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
     }
 
     setSelectedToken(token)
+    // TODO: these router.pushes are forcing re-renders and causing step to reset
+    // try what's mentioned in this issue https://github.com/vercel/next.js/discussions/18072
     url = `${url}&tokenId=${token.tokenAddress}`
-    router.push(url)
+    router.push(url, undefined, {shallow:true})
     setStep(2)
   }
 
   const clearSelectedToken = () => {
     setSelectedToken(undefined)
     setSelectedMarket(undefined)
-    router.push(`?type=${type}`)
+    router.push(`?type=${type}`, undefined, {shallow: true})
     setStep(1)
   }
 
@@ -148,10 +151,10 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
         </>
       )
     }
-  }, [clearSelectedToken, isLoadingTokenRelatedVaults, selectMarket, selectToken, selectedToken, step, tokenList, tokenRelatedVaultInfo])
+  }, [step, tokenList, tokenRelatedVaultInfo])
 
   return (
-    <Dialog.Root open={isDialogOpen}>
+    <Dialog.Root open={isDialogOpen} onOpenChange={(isOpen) => setIsDialogOpen(isOpen)}>
       <Dialog.Trigger>
         {isLoadingParamToken ? (
           <Skeleton height={'60px'} />
@@ -178,7 +181,9 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
                     selectedMarket.hasCollateral1Shares ? 'border-2 border-yellow-500' : '',
                   ]}
                   selectedToken={selectedToken}
+                  fee={selectedMarket.fee}
                   hideHyperLink
+                  hasSubInfo
                 />
                 <div className="flex flex-row items-center justify-between gap-x-2">
                   <Apy apy={Number(selectedMarket.apy)} />

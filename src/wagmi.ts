@@ -22,28 +22,8 @@ export const config = getDefaultConfig({
   ],
   transports: {
     [sepolia.id]: http(
-      `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
     ),
   },
   ssr: process.env.NODE_ENV === 'development', // If your dApp uses server side rendering (SSR)
 });
-
-
-// export const wagmiConfig = getDefaultConfig({
-//   appName: 'Panoptic Earn',
-//   projectId: '4b8e600fea0445270bf5952419a7a08b', // For WalletConnect 2.0
-//   chains: [
-//     // mainnet,
-//     // polygon,
-//     // optimism,
-//     // arbitrum,
-//     // base,
-//     sepolia,
-//   ],
-//   transports: {
-//     [sepolia.id]: http(
-//       `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-//     ),
-//   },
-//   ssr: process.env.NODE_ENV === true, // If your dApp uses server side rendering (SSR)
-// })

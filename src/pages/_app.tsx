@@ -14,6 +14,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
+import { structuralSharing } from '@wagmi/core/query';
 import { ConnectButton, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
 import { config } from "~/wagmi";
@@ -136,6 +137,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [client] = useState(
     () =>
       new QueryClient({
+        defaultOptions: {
+          queries: {
+            structuralSharing,
+          },
+        },
         queryCache: new QueryCache({
           onError: (error, query) => {
             if (query?.meta?.errorMessage) {

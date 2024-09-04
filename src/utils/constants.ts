@@ -56,7 +56,7 @@ export const getAlchemyInstance = (chainId: number) => {
   }
 
   const config = {
-    apiKey: process.env.ALCHEMY_API_KEY,
+    apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
     network: alchemyNetworkChainId[chainId],
   }
 
