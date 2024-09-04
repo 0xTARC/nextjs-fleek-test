@@ -197,6 +197,8 @@ export default function Discover() {
                   )
                 : 0
 
+            console.log('collateralTotalAssetsMap: ', collateralTotalAssetsMap)
+            console.log('panopticPool.collateral0.id: ', panopticPool.collateral0.id)
             const totalAssetsCollateral0 = Number(
               formatUnits(
                 BigInt(collateralTotalAssetsMap[panopticPool.collateral0.id as Address]),

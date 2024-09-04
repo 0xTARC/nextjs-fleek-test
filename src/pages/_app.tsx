@@ -1,7 +1,12 @@
 import "../styles/globals.css";
+import '@radix-ui/themes/styles.css'
+import 'react-loading-skeleton/dist/skeleton.css'
 import "@rainbow-me/rainbowkit/styles.css";
-import type { AppProps } from "next/app";
+import 'react-toastify/dist/ReactToastify.css'
+import '~/app.css'
 
+import type { AppProps } from "next/app";
+import dynamic from 'next/dynamic'
 import { HiDotsHorizontal as DotsIcon } from "react-icons/hi";
 import {
   QueryCache,
@@ -154,6 +159,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       })
   ); // Create stable query client to prevent excessive re-renders
 
+  const DynamicComponent = dynamic(() => Promise.resolve(Component), {
+    ssr: false,
+  });
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={client}>
@@ -161,7 +170,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Theme grayColor="slate">
             <Header />
             <main className="px-2 py-6 sm:px-16 sm:py-12 ">
-              <Component {...pageProps} />
+              <DynamicComponent {...pageProps} />
             </main>
             <Footer />
           </Theme>
