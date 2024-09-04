@@ -1,0 +1,83 @@
+query GetMarketDetails($market: ID!) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+  panopticPool(id: $market) {
+    ...PanopticPool
+  }
+}
+
+query GetMarketDetailsFromBlock($market: ID!, $blockNumber: Int) {
+  bundle(id: 1, block: { number: $blockNumber}) {
+    ethPriceUSD
+  }
+  panopticPool(id: $market, block: { number: $blockNumber}) {
+    ...PanopticPool
+  }
+}
+
+
+query GetMarketMintEvents($market: String!, $weekAgo: BigInt) {
+  events(
+    where: {pool_: {  panopticPool: $market	}, timestamp_gt: $weekAgo, eventType: OptionMint}
+    first: 1000
+    orderBy:blockNumber
+    orderDirection:desc
+  ) {
+    ... on OptionMint { 
+      ...OptionMint
+    }
+  }  
+}
+
+query GetMarketsMintEvents($weekAgo: BigInt) {
+  events(
+    where: {timestamp_gt: $weekAgo, eventType: OptionMint}
+    first: 1000
+    orderBy:blockNumber
+    orderDirection:desc
+  ) {
+    ... on OptionMint { 
+      ...OptionMint
+    }
+  }  
+}
+
+query GetTokenRelatedMarkets($tokenId: String!) {
+  panopticPools (
+      where:{
+        or: [
+          {token0: $tokenId},
+          {token1: $tokenId},
+        ]
+      }
+    ) {
+      ...PanopticPool
+  }
+}
+
+query GetMarketsBySelectedTokenAndFeeTier($assetToken: String!, $quoteToken: String!, $feeTiers: [BigInt!] = [100, 500, 3000, 10000]) {
+  pools(
+    first: 20
+    where: {
+      or: [
+        { token0: $assetToken, token1: $quoteToken,  feeTier_in: $feeTiers }
+        { token0: $quoteToken, token1: $assetToken,  feeTier_in: $feeTiers }
+      ]
+    }
+  ) {
+    ...Pool
+    poolDayData(orderBy: date, orderDirection: desc) {
+      ...PoolDayData
+    }
+  }
+}
+
+query GetMarkets {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+  panopticPools {
+    ...PanopticPool
+  }
+}

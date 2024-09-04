@@ -1,4 +1,5 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { http } from 'viem';
 import {
   arbitrum,
   base,
@@ -9,15 +10,40 @@ import {
 } from 'wagmi/chains';
 
 export const config = getDefaultConfig({
-  appName: 'RainbowKit App',
-  projectId: 'YOUR_PROJECT_ID',
+  appName: 'Panoptic Earn',
+  projectId: '4b8e600fea0445270bf5952419a7a08b', // For WalletConnect 2.0
   chains: [
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
-    base,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
+    // mainnet,
+    // polygon,
+    // optimism,
+    // arbitrum,
+    // base,
+    sepolia,
   ],
-  ssr: true,
+  transports: {
+    [sepolia.id]: http(
+      `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+    ),
+  },
+  ssr: process.env.NODE_ENV === 'development', // If your dApp uses server side rendering (SSR)
 });
+
+
+// export const wagmiConfig = getDefaultConfig({
+//   appName: 'Panoptic Earn',
+//   projectId: '4b8e600fea0445270bf5952419a7a08b', // For WalletConnect 2.0
+//   chains: [
+//     // mainnet,
+//     // polygon,
+//     // optimism,
+//     // arbitrum,
+//     // base,
+//     sepolia,
+//   ],
+//   transports: {
+//     [sepolia.id]: http(
+//       `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+//     ),
+//   },
+//   ssr: process.env.NODE_ENV === true, // If your dApp uses server side rendering (SSR)
+// })

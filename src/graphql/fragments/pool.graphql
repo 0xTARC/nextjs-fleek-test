@@ -1,0 +1,127 @@
+fragment Pool on Pool {
+  poolId
+  sqrtPrice
+  tick
+  tickSpacing
+  id
+  liquidity
+  token0Price
+  token1Price
+  feeTier
+  totalValueLockedToken0
+  totalValueLockedToken1
+  totalValueLockedUSD
+  token0 {
+    id
+    name
+    symbol
+    decimals
+    derivedETH
+  }
+  token1 {
+    id
+    name
+    symbol
+    decimals
+    derivedETH
+  }
+  panopticPool {
+    ...PanopticPool
+  }
+}
+
+fragment PoolDayData on PoolDayData {  
+  id
+  date
+  txCount
+  liquidity
+  token0Price
+  token1Price
+  volumeToken0
+  volumeToken1
+  volumeUSD
+  feesUSD
+  open
+  high
+  low
+  close
+}
+
+fragment PoolHourData on PoolHourData {
+  id
+  open
+  close
+  high
+  low
+  txCount
+  periodStartUnix
+  token0Price
+  token1Price
+}
+
+fragment PanopticPool on PanopticPool {
+  id
+  txCount
+  underlyingPool {
+    id
+    feeTier
+    tickSpacing
+    token0 {
+      id
+      name
+      symbol
+      derivedETH
+      decimals
+    }
+
+    token1 {
+      id
+      name
+      symbol
+      derivedETH
+      decimals
+    }
+
+    totalValueLockedUSD
+    poolDayData(
+      first: 1000
+      orderBy: date
+      orderDirection: desc
+    ) {
+      ...PoolDayData
+    }
+    poolHourData(    
+      first: 1000
+      orderBy: periodStartUnix
+      orderDirection: desc
+    ) {
+      ...PoolHourData
+    }
+  }
+
+  # Query collateral0 and 1 for this panoptic pool
+  # Also fetch past 7 days of data to calculate 7-day APY from sharePrice
+  collateral0 {
+    id
+    totalAssets
+    totalShares
+
+    collateralDayData(first: 7) {
+      id # Timestamp rounded to current day by dividing by 86400
+      sharePrice
+    }
+  }
+
+  collateral1 {
+    id
+    totalAssets
+    totalShares
+
+    collateralDayData(first: 7) {
+      id
+      sharePrice
+    }
+  }
+  commissions0
+  commissions1
+}

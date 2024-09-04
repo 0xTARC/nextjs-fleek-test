@@ -1,0 +1,42 @@
+query GetSamplePoolsWithCollateralDayData {
+  panopticPools(first: 3) {
+    id
+    underlyingPool {
+      id
+      feeTier
+      token0 {
+        id
+        decimals
+        symbol
+      }
+
+      token1 {
+        id
+        decimals
+        symbol
+      }
+    }
+
+    # Query collateral0 and 1 for this panoptic pool
+    # Also fetch past 7 days of data to calculate 7-day APY from sharePrice
+    collateral0 {
+      totalAssets
+      totalShares
+
+      collateralDayData(first: 7) {
+        id # Timestamp rounded to current day by dividing by 86400
+        sharePrice
+      }
+    }
+
+    collateral1 {
+      totalAssets
+      totalShares
+
+      collateralDayData(first: 7) {
+        id
+        sharePrice
+      }
+    }
+  }
+}

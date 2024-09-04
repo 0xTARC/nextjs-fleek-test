@@ -1,0 +1,57 @@
+fragment AccountBalance on AccountBalance {
+  id
+  owner {
+    id
+  }
+  sender {
+    id
+  }
+  tokenId {
+    id
+    idHexString
+    legs {
+      ...Leg
+    }
+    pool {
+      ...Pool
+      token0 {
+        id
+        decimals
+        derivedETH
+      }
+      token1 {
+        id
+        decimals
+        derivedETH
+      }
+    }
+  }
+  panopticPoolAccount {
+    id
+    panopticPool {
+      id
+      underlyingPool {
+        tick
+      }
+    }
+  }
+
+  tokenCount
+  createdTimestamp
+  createdBlockNumber
+
+  txnOpened {
+    eventType
+    ... on OptionMint {
+      ...OptionMint
+    }
+
+  }
+
+  txnClosed {
+    eventType
+    ... on OptionBurn {
+      ...OptionBurn
+    }
+  }
+}

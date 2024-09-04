@@ -1,0 +1,76 @@
+query GetVaultsWithDepositsFromAccount($account: String!) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(
+    where: {or: [{collateral0Shares_gt: 0, account: $account}, {collateral1Shares_gt: 0, account: $account}]}
+  ) {
+    ...PanopticPoolAccount
+  }
+}
+
+query GetVaultsInfoFromNonDepositedPools($panopticPoolIds: [String!]) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(
+    where: { panopticPool_not_in: $panopticPoolIds, collateral0Shares_gt: 0, collateral1Shares_gt: 0 }
+  ) {
+    ...PanopticPoolAccount
+  }
+}
+
+query GetVaultsInfoFromAllPools {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(
+    where: { collateral0Shares_gt: 0, collateral1Shares_gt: 0 }
+  ) {
+    ...PanopticPoolAccount
+  }
+}
+
+query GetVaultsInfoFromPoolIds($panopticPoolIds: [String!]) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(
+    where: { panopticPool_in: $panopticPoolIds, collateral0Shares_gt: 0, collateral1Shares_gt: 0 }
+  ) {
+    ...PanopticPoolAccount
+  }
+}
+
+query GetAllPools($panopticPoolIds: [String!]) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(
+    where: { panopticPool_in: $panopticPoolIds }
+  ) {
+    ...PanopticPoolAccount
+  }
+}
+
+query GetEthPriceUSD {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+}
+
+query GetPpaAccountCollateralInfo($account: String!) {
+  panopticPoolAccounts(
+    where: { account: $account, collateral0Shares_gt: 0, collateral1Shares_gt: 0 }
+  ) {
+    collateral0Assets
+    collateral0Shares
+    collateral1Assets
+    collateral1Shares
+  }
+}

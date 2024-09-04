@@ -1,0 +1,11 @@
+fragment Leg on Leg {
+  id
+  index
+  optionRatio
+  asset
+  tokenType
+  isLong
+  riskPartner
+  strike
+  width
+}

@@ -1,0 +1,79 @@
+query GetCommissionsAtBlock($account: String!, $blockNumber: Int) {
+  bundle(id: 1, block: { number: $blockNumber }) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(where: { account: $account }, block: { number: $blockNumber }) {
+    id
+    # these aren't needed when querying at past blocks
+    # commissionsSinceLastTransfer0
+    # commissionsSinceLastTransfer1
+    collateral0Assets
+    collateral1Assets
+    panopticPool {
+      underlyingPool {
+        id
+        token0 {
+          name
+          derivedETH
+        }
+        token1 {
+          name
+          derivedETH
+        }
+      }
+
+      collateral0 {
+        ...Collateral
+      }
+
+      collateral1 {
+        ...Collateral
+      }
+    }
+  }
+}
+
+query GetCommissions($account: String!) {
+  bundle(id: 1) {
+    ethPriceUSD
+  }
+
+  panopticPoolAccounts(where: { account: $account }) {
+    id
+
+    commissionsSinceLastTransfer0
+    commissionsSinceLastTransfer1
+
+    sharePriceAtLastTransfer0
+    sharePriceAtLastTransfer1
+
+    collateral0Shares
+    collateral1Shares
+
+    collateral0Assets
+    collateral1Assets
+
+    panopticPool {
+      underlyingPool {
+        id
+        token0 {
+          name
+          derivedETH
+        }
+        token1 {
+          name
+          derivedETH
+        }
+      }
+
+      collateral0 {
+        ...Collateral
+      }
+
+      collateral1 {
+        ...Collateral
+      }
+    }
+  }
+}

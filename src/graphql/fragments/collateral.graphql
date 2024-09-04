@@ -1,0 +1,13 @@
+fragment Collateral on Collateral {
+  id
+  token {
+    id
+  }
+  totalAssets
+  totalShares
+  inAMM
+  panopticPool {
+    id
+  }
+  index
+}

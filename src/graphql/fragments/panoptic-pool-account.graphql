@@ -1,0 +1,60 @@
+fragment PanopticPoolAccount on PanopticPoolAccount {
+  id
+
+  collateral0Assets
+  collateral0Shares
+  collateral1Assets
+  collateral1Shares
+
+  account {
+    id
+  }
+  
+  panopticPool {
+    id
+    underlyingPool {
+      id
+      feeTier
+      token0 {
+        id
+        name
+        symbol
+        derivedETH
+        decimals
+      }
+
+      token1 {
+        id
+        name
+        symbol
+        derivedETH
+        decimals
+      }
+    }
+
+    # Query collateral0 and 1 for this panoptic pool
+    # to convert the account's shares into assets
+    # Also fetch past 7 days of data to calculate 7-day APY from sharePrice
+    collateral0 {
+      id
+      totalAssets
+      totalShares
+
+      collateralDayData(first: 7) {
+        id # Timestamp rounded to current day by dividing by 86400
+        sharePrice
+      }
+    }
+
+    collateral1 {
+      id
+      totalAssets
+      totalShares
+
+      collateralDayData(first: 7) {
+        id
+        sharePrice
+      }
+    }
+  }
+}

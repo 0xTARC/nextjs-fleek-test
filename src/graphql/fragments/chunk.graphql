@@ -1,0 +1,29 @@
+fragment Chunk on Chunk {
+    id
+    owner {
+      id
+    }
+    manager {
+      id
+    }
+    tickLower
+    tickUpper
+    strike
+    width
+    tokenType
+    pool {
+      id
+    }
+    panopticPool {
+      id
+    }
+    netLiquidity
+    shortLiquidity
+    longLiquidity
+    shortCounts
+    longCounts
+    totalLiquidity
+    legs {
+      id
+    }
+}
