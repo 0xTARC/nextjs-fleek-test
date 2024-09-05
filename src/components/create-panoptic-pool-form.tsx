@@ -16,7 +16,7 @@ import { Button as RadixButton, Callout } from '@radix-ui/themes'
 import { RxInfoCircled as InfoCircledIcon } from 'react-icons/rx'
 import { shortenMantissaIfNecessary } from '~/utils/currencyFormat'
 import { toast } from 'react-toastify'
-import { useRouter } from 'next/router'
+import {useRouter} from 'next/router'
 
 /// Calculate liquidity and approximate token amounts needed for full range liq. deployed as a consequence of PanopticPool deployment
 const calcFullRangeLiqForDeployment = (
@@ -142,10 +142,7 @@ export function CreatePanopticPoolForm({
       toast.success('Market created successfully!')
       // Navigate after 10 secs
       setTimeout(() => {
-        // NOTE: this is the panoptic pool address, not the uniswap pool address like the main Panoptic UI
-        // This is because the grho app is for facilitating panoptic collateral deposits, while the main UI
-        // facilitates interactions in Uniswap pools *as well as* panoptic pools
-        router.push(`/markets?marketAddress=${simulateDeploy.data?.result}`)
+        router.push(`/markets/${simulateDeploy.data?.result}`)
       }, 10000)
     },
   )
@@ -209,19 +206,6 @@ export function CreatePanopticPoolForm({
         id="action-button"
         onClick={() => createPanopticPoolAction.write?.()}
         disabled={
-          address === undefined ||
-          !createPanopticPoolAction.write ||
-          createPanopticPoolAction.isLoading ||
-          approveToken0.simulate.error != null ||
-          approveToken0.simulate.isLoading ||
-          approveToken1.simulate.error != null ||
-          approveToken1.simulate.isLoading ||
-          simulateDeploy.isLoading ||
-          simulateDeploy.error != null ||
-          writeDeploy.isPending ||
-          waitDeploy.isLoading
-        }
-        unsafeDisable={
           address === undefined ||
           !createPanopticPoolAction.write ||
           createPanopticPoolAction.isLoading ||

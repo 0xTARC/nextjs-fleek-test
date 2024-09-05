@@ -1,5 +1,6 @@
 import { Dialog, Separator, Spinner } from '@radix-ui/themes'
 import { FC, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { TokenApyInfo } from '~/utils/userAccount'
 import { Button } from './button'
 import { DialogTitle } from './dialog-title'
@@ -13,6 +14,7 @@ import clsx from 'clsx'
 import { useIsSupportedChain } from '~/hooks/useIsSupportedChain'
 import { TxExplorerButton } from './tx-explorer-btn'
 import { useAccount } from 'wagmi'
+import { useRouter } from 'next/router'
 
 export type DialogConfirmationDepositProps = {
   selectedToken: TokenApyInfo | undefined
@@ -31,6 +33,8 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
   maxValue,
   isLoading,
 }) => {
+  const queryClient = useQueryClient()
+  const router = useRouter()
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [step, setStep] = useState<number>(1)
   const isSupportedChain = useIsSupportedChain()
@@ -41,7 +45,7 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
     }
 
     return (
-      <div className=" overflow-y-scroll">
+      <div className="overflow-y-scroll">
         <Separator orientation="horizontal" size="4" />
         <div className="p-5 flex flex-col gap-y-5">
           <div className="flex flex-row items-center gap-x-3">
@@ -91,21 +95,28 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
     depositTokenAmount,
     Number(selectedToken?.tokenDecimals),
   )
+
   const {
     write,
-    isLoading: isLoadingDepositLiquidity,
-    data,
+    isReady: isDepositLiquidityReady,
     actionLabel,
     wait,
-  } = useDepositLiquidity(collateralAddress, selectedToken, depositTokenAmountFormatted, () =>
-    setStep(3),
-  )
+  } = useDepositLiquidity(collateralAddress, selectedToken, depositTokenAmountFormatted, () => {
+    setStep(2)
+    // refetch token balances so "amount to deposit" changes
+    queryClient.invalidateQueries({
+      queryKey: ['accountBalances'],
+    })
+    setTimeout(() => {
+      router.push('/portfolio')
+    }, 3000)
+  })
 
   const dialogContent = useMemo(() => {
     return (
       <>
         <DialogTitle
-          dialogTitle={step !== 3 ? 'Confirm Deposit' : 'Successfully Deposited!'}
+          dialogTitle={step !== 2 ? 'Confirm Deposit' : 'Successfully Deposited!'}
           setDialogOpen={setIsDialogOpen}
         />
         {depositInfo}
@@ -121,18 +132,12 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
   const buttons = useMemo(() => {
     if (step === 1) {
       return (
-        <Button className="w-full" size="lg" onClick={() => setStep(2)}>
-          Deposit
-        </Button>
-      )
-    } else if (step === 2) {
-      return (
         <Button
           className="w-full"
           size="lg"
-          disabled={!data?.request}
-          onClick={() => write(data!.request)}>
-          {isLoadingDepositLiquidity ? (
+          disabled={isDepositLiquidityReady}
+          onClick={() => write()}>
+          {isDepositLiquidityReady ? (
             <div className="flex flex-row gap-x-3 items-center justify-center">
               <p>Pending</p> <Spinner size="3" />
             </div>
@@ -148,7 +153,7 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
         </Button>
       )
     }
-  }, [write, isLoadingDepositLiquidity, data, actionLabel, step])
+  }, [step, isDepositLiquidityReady, actionLabel, write])
 
   const isDisabled =
     selectedMarket === undefined ||
@@ -159,30 +164,28 @@ export const DialogConfirmationDeposit: FC<DialogConfirmationDepositProps> = ({
     !isSupportedChain
 
   return (
-    <>
-      <Dialog.Root open={isDialogOpen}>
-        <Dialog.Trigger>
-          {isLoading ? (
-            <Skeleton height={'60px'} />
-          ) : (
-            <Button
-              className={'w-full'}
-              size="lg"
-              onClick={() => {
-                if (isDisabled) return
-                setIsDialogOpen(true)
-              }}
-              variant={isConnected && !isSupportedChain ? 'error' : 'primary'}
-              disabled={isDisabled}>
-              <p>Deposit</p>
-            </Button>
-          )}
-        </Dialog.Trigger>
-        <Dialog.Content className="!p-0" maxWidth={'500px'}>
-          {dialogContent}
-          <div className="p-2">{buttons}</div>
-        </Dialog.Content>
-      </Dialog.Root>
-    </>
+    <Dialog.Root open={isDialogOpen} onOpenChange={(isOpen) => setIsDialogOpen(isOpen)}>
+      <Dialog.Trigger>
+        {isLoading ? (
+          <Skeleton height={'60px'} />
+        ) : (
+          <Button
+            className={'w-full'}
+            size="lg"
+            onClick={() => {
+              if (isDisabled) return
+              setIsDialogOpen(true)
+            }}
+            variant={isConnected && !isSupportedChain ? 'error' : 'primary'}
+            disabled={isDisabled}>
+            <p>Deposit</p>
+          </Button>
+        )}
+      </Dialog.Trigger>
+      <Dialog.Content className="!p-0" maxWidth={'500px'}>
+        {dialogContent}
+        <div className="p-2">{buttons}</div>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }

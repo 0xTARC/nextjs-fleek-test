@@ -15,7 +15,7 @@ import {
   getAssetQuoteToken,
   getChainSpecificTokensList,
 } from '~/utils/tokens'
-import { abi as CollateralTrackerAbi } from '~/abis/CollateralTracker'
+import { abi as CollateralTrackerAbi } from '../abis/CollateralTracker'
 import { useMemo, useState } from 'react'
 import { Button } from '~/components/button'
 import { useAccountCollateralShares } from '~/hooks/useAccountInfo'
@@ -24,8 +24,7 @@ import { NATIVE_TOKENS, STABLECOINS } from '~/utils/constants'
 import { useUserAddedTokens } from '~/hooks/useToken'
 import { FeeTierSelect } from '~/components/fee-tier-select'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
-import { Sheet } from 'react-modal-sheet'
-import { IoSearch } from 'react-icons/io5'
+import { pageTitle } from '~/components/component.styles'
 
 export function clientLoader() {
   const data = { success: true }
@@ -197,8 +196,6 @@ export default function Discover() {
                   )
                 : 0
 
-            console.log('collateralTotalAssetsMap: ', collateralTotalAssetsMap)
-            console.log('panopticPool.collateral0.id: ', panopticPool.collateral0.id)
             const totalAssetsCollateral0 = Number(
               formatUnits(
                 BigInt(collateralTotalAssetsMap[panopticPool.collateral0.id as Address]),
@@ -513,58 +510,18 @@ export default function Discover() {
 
   return (
     <Container size="4">
-      <div className="flex flex-col gap-y-10">
-        {isMobile ? (
-          <>
-            <div className="flex flex-row items-center justify-between">
-              <h2 className="text-color-text-alt text-2xl font-medium">Discover</h2>
-              <div className="flex flex-row items-center justify-end">
-                <Button
-                  variant="flat"
-                  className="!border-none"
-                  onClick={() => setOpenMobileMarketSearch(true)}>
-                  <IoSearch size={26} />
-                </Button>
-              </div>
+      <div className="flex flex-col sm:gap-y-10 gap-y-4">
+        <h2 className={pageTitle}>Discover</h2>
+        <div className="p-6 shadow rounded-2xl border">
+          <p className="text-md text-color-text-alt font-semibold pb-4">Search Market</p>
+          <div className="flex flex-row ">
+            <div className="sm:grid sm:grid-cols-3 sm:gap-6 flex flex-col gap-y-4 w-full">
+              <div className="col-span-1">{selectMarketDropDown}</div>
+              <div className="col-span-1">{selectPriceInDropDown}</div>
+              <div className="col-span-1">{selectFeeDropDown}</div>
             </div>
-            <Sheet
-              isOpen={isOpenMobileMarketSearch}
-              onClose={() => setOpenMobileMarketSearch(false)}
-              detent="content-height">
-              <Sheet.Container>
-                <Sheet.Header />
-                <Sheet.Content>
-                  <Sheet.Scroller className="p-4 flex flex-col gap-y-10">
-                    <div>
-                      <p className="text-lg font-semibold pb-10">Search Market</p>
-                      <div className="flex flex-wrap w-full items-start gap-3 justify-between">
-                        {selectMarketDropDown}
-                        {selectPriceInDropDown}
-                        {selectFeeDropDown}
-                      </div>
-                    </div>
-                    <Button
-                      variant="border"
-                      className="!rounded-full !text-lg"
-                      onClick={() => setOpenMobileMarketSearch(false)}>
-                      Close
-                    </Button>
-                  </Sheet.Scroller>
-                </Sheet.Content>
-              </Sheet.Container>
-              <Sheet.Backdrop />
-            </Sheet>
-          </>
-        ) : (
-          <>
-            <h2 className="text-color-text-alt text-2xl font-medium">Discover</h2>
-            <div className="flex flex-row gap-x-6 items-center">
-              {selectMarketDropDown}
-              {selectPriceInDropDown}
-              {selectFeeDropDown}
-            </div>
-          </>
-        )}
+          </div>
+        </div>
         <div className="flex flex-col gap-y-2">
           <div className="flex flex-row items-center gap-x-4">
             <Button

@@ -13,28 +13,30 @@ import clsx from 'clsx'
 import { useIsSupportedChain } from '~/hooks/useIsSupportedChain'
 import { TxExplorerButton } from './tx-explorer-btn'
 import { useAccount } from 'wagmi'
+import { useRouter } from 'next/router'
 
 export type DialogConfirmationWithdrawProps = {
   selectedToken: TokenApyInfo | undefined
   selectedMarket: TokenRelatedMarketInfo | undefined
   withdrawTokenAmount: string
-  ethPriceUSD: number
   maxValue: bigint
   isLoading: boolean
+  onWithdrawSuccess: () => void
 }
 
 export const DialogConfirmationWithdraw: FC<DialogConfirmationWithdrawProps> = ({
   selectedMarket,
   selectedToken,
   withdrawTokenAmount,
-  ethPriceUSD,
   maxValue,
   isLoading,
+  onWithdrawSuccess,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [step, setStep] = useState<number>(1)
   const isSupportedChain = useIsSupportedChain()
   const { isConnected } = useAccount()
+  const router = useRouter()
   const withdrawAmountFormatted = parseUnits(
     withdrawTokenAmount,
     Number(selectedToken?.tokenDecimals),
@@ -96,20 +98,25 @@ export const DialogConfirmationWithdraw: FC<DialogConfirmationWithdrawProps> = (
 
   const {
     write,
-    isLoading: isLoadingWithdrawLiquidity,
-    data,
+    isReady: isWithdrawLiquidityReady,
     actionLabel,
-    isError,
     wait,
-  } = useWithdrawLiquidity(collateralAddress, selectedToken, withdrawAmountFormatted, () =>
-    setStep(3),
-  )
+    errors,
+  } = useWithdrawLiquidity(collateralAddress, selectedToken, withdrawAmountFormatted, () => {
+    setStep(2)
+    // refetch token balances so "amount to deposit" changes
+    onWithdrawSuccess()
+    setTimeout(() => {
+      router.push('/portfolio')
+    }, 3000)
+  })
+  const isError = errors.length > 0
 
   const dialogContent = useMemo(() => {
     return (
       <>
         <DialogTitle
-          dialogTitle={step !== 3 ? 'Confirm Withdraw' : 'Successfully Withdrawn!'}
+          dialogTitle={step !== 2 ? 'Confirm Withdraw' : 'Successfully Withdrawn!'}
           setDialogOpen={setIsDialogOpen}
         />
         {withdrawInfo}
@@ -125,19 +132,13 @@ export const DialogConfirmationWithdraw: FC<DialogConfirmationWithdrawProps> = (
   const buttons = useMemo(() => {
     if (step === 1) {
       return (
-        <Button className="w-full" size="lg" onClick={() => setStep(2)}>
-          Withdraw
-        </Button>
-      )
-    } else if (step === 2) {
-      return (
         <Button
           className="w-full"
           size="lg"
           variant={isError ? 'error' : 'primary'}
-          disabled={!data?.request || isError}
-          onClick={() => write(data!.request)}>
-          {isLoadingWithdrawLiquidity ? (
+          disabled={isWithdrawLiquidityReady || isError}
+          onClick={() => write()}>
+          {isWithdrawLiquidityReady ? (
             <div className="flex flex-row gap-x-3 items-center justify-center">
               <p>Pending</p> <Spinner size="3" />
             </div>
@@ -153,7 +154,7 @@ export const DialogConfirmationWithdraw: FC<DialogConfirmationWithdrawProps> = (
         </Button>
       )
     }
-  }, [write, isLoadingWithdrawLiquidity, data, actionLabel, step, isError])
+  }, [step, isError, isWithdrawLiquidityReady, actionLabel, write])
 
   const isDisabled =
     selectedMarket === undefined ||
@@ -164,30 +165,28 @@ export const DialogConfirmationWithdraw: FC<DialogConfirmationWithdrawProps> = (
     !isSupportedChain
 
   return (
-    <>
-      <Dialog.Root open={isDialogOpen}>
-        <Dialog.Trigger>
-          {isLoading ? (
-            <Skeleton height={'60px'} />
-          ) : (
-            <Button
-              className={'w-full'}
-              size="lg"
-              onClick={() => {
-                if (isDisabled) return
-                setIsDialogOpen(true)
-              }}
-              variant={isConnected && !isSupportedChain ? 'error' : 'primary'}
-              disabled={isDisabled}>
-              <p>Withdraw</p>
-            </Button>
-          )}
-        </Dialog.Trigger>
-        <Dialog.Content className="!p-0" maxWidth={'500px'}>
-          {dialogContent}
-          <div className="p-2">{buttons}</div>
-        </Dialog.Content>
-      </Dialog.Root>
-    </>
+    <Dialog.Root open={isDialogOpen} onOpenChange={(isOpen) => setIsDialogOpen(isOpen)}>
+      <Dialog.Trigger>
+        {isLoading ? (
+          <Skeleton height={'60px'} />
+        ) : (
+          <Button
+            className={'w-full'}
+            size="lg"
+            onClick={() => {
+              if (isDisabled) return
+              setIsDialogOpen(true)
+            }}
+            variant={isConnected && !isSupportedChain ? 'error' : 'primary'}
+            disabled={isDisabled}>
+            <p>Withdraw</p>
+          </Button>
+        )}
+      </Dialog.Trigger>
+      <Dialog.Content className="!p-0" maxWidth={'500px'}>
+        {dialogContent}
+        <div className="p-2">{buttons}</div>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }

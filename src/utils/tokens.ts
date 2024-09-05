@@ -223,3 +223,14 @@ export const getChainSpecificTokensList = (chainId: number): TokenInfo[] => {
     (token) => Number(token.chainId) === chainId,
   )
 }
+
+export const getTokensFilter = (inputValue: string) => {
+  const lowerCasedInputValue = inputValue.toLowerCase()
+  return function tokensFilter(token: TokenInfo) {
+    return (
+      !inputValue ||
+      token.name.toLowerCase().includes(lowerCasedInputValue) ||
+      token.symbol.toLowerCase().includes(lowerCasedInputValue)
+    )
+  }
+}

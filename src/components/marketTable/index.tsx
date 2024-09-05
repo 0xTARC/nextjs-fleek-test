@@ -6,9 +6,9 @@ import { useSortableTable } from '../table/useSortableTable'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { Row } from './row'
 import { Button } from '@radix-ui/themes'
-import Link from 'next/link'
 import { sortTokenAddressPair } from '~/utils/tokens'
 import { getAddress, zeroAddress } from 'viem'
+import Link from 'next/link'
 
 export type MarketTableInfo = {
   market: string
@@ -44,13 +44,6 @@ const formatLargeScreenColumns = () => {
       type: 'string',
     },
     {
-      label: 'Transactions',
-      accessor: 'txCount',
-      sortable: false,
-      style: 'justify-left items-left',
-      type: 'number',
-    },
-    {
       label: 'TVL',
       accessor: 'tvl',
       sortable: false,
@@ -61,7 +54,7 @@ const formatLargeScreenColumns = () => {
       label: '7 Days Volume',
       accessor: 'weeklyVol',
       sortable: false,
-      style: 'justify-left items-left',
+      style: 'justify-end items-end',
       type: 'string',
     },
     {
@@ -101,8 +94,6 @@ export const MarketTable: FC<MarketTableProps> = ({
   const { isMobile } = useScreenDetector()
   const columns = isMobile ? formatMobileColumns() : formatLargeScreenColumns()
   const { tableData, handleSorting } = useSortableTable(markets, columns)
-
-  console.log('fee: ', fee)
 
   const [token0Address, token1Address] = sortTokenAddressPair(
     getAddress(assetTokenAddress ?? zeroAddress),

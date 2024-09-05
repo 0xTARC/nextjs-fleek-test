@@ -15,7 +15,8 @@ export const useTokenApprove = (
 ) => {
   const { chainId } = useAccount()
   const tokenAddress = getAddress(token ? token.tokenAddress : zeroAddress)
-  const { data: approveData } = useSimulateContract({
+
+  const simulate = useSimulateContract({
     address: tokenAddress,
     chainId: chainId,
     abi: erc20Abi,
@@ -26,14 +27,10 @@ export const useTokenApprove = (
     },
   })
 
-  const {
-    writeContract: writeContractApprove,
-    isPending: isPendingApprove,
-    data: approveHash,
-  } = useWriteContract()
+  const write = useWriteContract()
 
-  const approveWait = useWaitForTransactionReceipt({
-    hash: approveHash,
+  const wait = useWaitForTransactionReceipt({
+    hash: write.data,
     query: {
       meta: {
         successMessage: `Successfully approved ${token?.tokenSymbol}`,
@@ -43,9 +40,8 @@ export const useTokenApprove = (
   })
 
   return {
-    write: writeContractApprove,
-    isLoading: isPendingApprove,
-    data: approveData,
-    wait: approveWait,
+    write,
+    simulate,
+    wait,
   }
 }

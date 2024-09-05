@@ -1,14 +1,14 @@
 import { FC } from 'react'
-import { table } from '~/components/component.styles'
+import { table } from '../component.styles'
 import clsx from 'clsx'
 import { MarketTableInfo } from '.'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { MarketInfo } from '../market-info'
-import { useRouter } from "next/router";
 import { Apy } from '../apy'
 import { convertMonetaryFormat } from '~/utils/price'
 import { Button } from '../button'
 import { TokenInfo } from '@uniswap/token-lists'
+import { useRouter } from 'next/router'
 
 type RowProps = {
   market: MarketTableInfo
@@ -42,15 +42,17 @@ export const Row: FC<RowProps> = ({ market }) => {
           ]}
         />
       </td>
-      {/* Transactions */}
-      {isMobile ? null : <td className={clsx(table.td)}>{market.txCount}</td>}
       {/* TVL */}
       {isMobile ? null : (
         <td className={clsx(table.td)}>{convertMonetaryFormat(market.tvl, true, 2)}</td>
       )}
       {/* Daily Volume */}
       {isMobile ? null : (
-        <td className={clsx(table.td)}>{convertMonetaryFormat(market.weeklyVol, true, 2)}</td>
+        <td className={clsx(table.td)}>
+          <div className={'flex flex-row justify-end'}>
+            {convertMonetaryFormat(market.weeklyVol, true, 2)}
+          </div>
+        </td>
       )}
       {/* APY */}
       <td className={clsx(table.td)}>

@@ -24,3 +24,7 @@ export const focus =
 
 export const inputStyles =
   'p-3 py-[9.5px] text-[16px] leading-[19px] font-semibold bg-light-theme/color-background-float dark:bg-dark-theme/color-background-float rounded-lg border border-light-theme/color-border-base-alt dark:border-dark-theme/color-border-base-alt disabled:opacity-50'
+
+export const subSectionTitle = 'text-color-text-base text-md font-medium'
+
+export const pageTitle = 'text-color-text-base text-3xl font-semibold'

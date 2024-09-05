@@ -20,22 +20,12 @@ export const THead: FC<THeadProps> = ({ columns, handleSorting }: THeadProps) =>
   return (
     <tr className={table.tr}>
       {columns.map(({ label, accessor, sortable, style, type, tooltipContents }) => {
-        if (type == null) {
-          console.error('Error: type found to be null. Column: ', {
-            label,
-            accessor,
-            sortable,
-            style,
-            type,
-            tooltipContents,
-          })
-          return null
-        }
         return (
           <td
             key={accessor}
             onClick={sortable ? () => handleSortingChange(accessor, type) : () => {}}
-            className={clsx(table.th)}>
+            className={clsx(table.th)}
+            role="presentation">
             <Tooltip contents={tooltipContents ? tooltipContents : { message: null }}>
               <span
                 className={clsx('flex flex-row' + (sortable ? 'hover:cursor-pointer' : ''), style)}>

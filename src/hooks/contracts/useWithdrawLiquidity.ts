@@ -16,7 +16,7 @@ export const useWithdrawLiquidity = (
 ) => {
   const { address } = useAccount()
 
-  const { data: withdrawData, isError } = useSimulateContract({
+  const simulateWithdraw = useSimulateContract({
     address: collateralAddress,
     abi: CollateralTrackerAbi,
     functionName: 'withdraw',
@@ -34,10 +34,10 @@ export const useWithdrawLiquidity = (
     },
   })
 
-  const { writeContract: writeContractWithdraw, isPending, data: withdrawHash } = useWriteContract()
+  const writeWithdraw = useWriteContract()
 
   const withdrawWait = useWaitForTransactionReceipt({
-    hash: withdrawHash,
+    hash: writeWithdraw.data,
     query: {
       meta: {
         successMessage: `Successfully withdraw ${token?.tokenSymbol}`,
@@ -47,11 +47,17 @@ export const useWithdrawLiquidity = (
   })
 
   return {
-    write: writeContractWithdraw,
-    data: withdrawData,
+    write: () =>
+      simulateWithdraw.data?.request != null
+        ? writeWithdraw.writeContract(simulateWithdraw.data.request)
+        : null,
+    isReady:
+      simulateWithdraw.isLoading ||
+      simulateWithdraw.error != null ||
+      writeWithdraw.isPending ||
+      withdrawWait.isLoading,
     wait: withdrawWait,
     actionLabel: `Withdraw ${token?.tokenSymbol}`,
-    isLoading: isPending || withdrawWait.isLoading,
-    isError: isError,
+    errors: [simulateWithdraw.error, writeWithdraw.error].filter((error) => error !== null),
   }
 }

@@ -31,7 +31,9 @@ import { Alert } from '~/components/alert'
 import { Apy } from '~/components/apy'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { Button } from '~/components/button'
-import { dropdownMenu, listItem } from '~/components/component.styles'
+import { dropdownMenu, listItem, subSectionTitle } from '~/components/component.styles'
+import { TokenStakedInfo } from '~/utils/userAccount'
+import { TokenStakedTable } from '~/components/tokenStakedTable'
 import { Sheet } from 'react-modal-sheet'
 import clsx from 'clsx'
 
@@ -86,9 +88,11 @@ export const getPpaAccountInfo = async (chainId: number, account: Address) => {
 }
 
 export default function MarketDetails() {
+  const chainId = useChainId()
+  // const params = useParams()
+  // const marketAddress = params['marketAddress'] as Address
   const router = useRouter();
   const marketAddress = (router.query.marketAddress as Address) ?? null
-  const chainId = useChainId();
   const weekAgo = getEpochTime7DaysAgo()
   const [poolUtilization, setPoolUtilization] = useState<string | undefined>(undefined)
   const [tvl, setTvl] = useState<string | undefined>(undefined)
@@ -99,10 +103,6 @@ export default function MarketDetails() {
   const [priceChartType, setPriceChartType] = useState<ChartType>(ChartType.DAILY)
   const { isMobile } = useScreenDetector()
   const { isConnected, address } = useAccount()
-  const [isOpenMobileDeposit, setOpenMobileDeposit] = useState(false)
-  const [isOpenMobileWithdraw, setOpenMobileWithdraw] = useState(false)
-//   const navigate = useNavigate()
-  const navigateToDepositOrDeposit = (url: string) => router.push(url)
   const [poolInfo, poolEvents, pastWeekBlockNumber, accountCollateralInfo] = useQueries({
     queries: [
       {
@@ -147,7 +147,7 @@ export default function MarketDetails() {
       pastWeekBlockNumber.data !== undefined,
   })
 
-  const { data: collateralData } = useReadContracts({
+  const { data: collateralData, isLoading: isLoadingCollateralData } = useReadContracts({
     contracts: [
       {
         address: poolInfo.data?.panopticPool?.collateral0.id
@@ -208,6 +208,14 @@ export default function MarketDetails() {
     collateralData !== undefined && collateralData[5].result !== undefined
       ? collateralData[5].result > BigInt(0)
       : false
+  const userBalanceOfToken0 =
+    collateralData !== undefined && collateralData[4].result !== undefined
+      ? collateralData[4].result
+      : BigInt(0)
+  const userBalanceOfToken1 =
+    collateralData !== undefined && collateralData[5].result !== undefined
+      ? collateralData[5].result
+      : BigInt(0)
   useEffect(() => {
     if (
       collateralData &&
@@ -412,77 +420,6 @@ export default function MarketDetails() {
           </div>
           <div className="flex flex-row items-center gap-x-3">
             <Apy apy={marketAvgSevenDayApy} showLabel={isMobile ? false : true} />
-            {isMobile ? null : (
-              <>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger>
-                    <Button variant="primary" className={'hover:cursor-pointer'}>
-                      Deposit
-                    </Button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content color="gray" variant="soft">
-                    <DropdownMenu.Item
-                      className={dropdownMenu.item}
-                      onClick={() =>
-                        navigateToDepositOrDeposit(
-                          `/earn?type=deposit&tokenId=${marketInfo.token0.id}&marketId=${poolInfo.data.panopticPool?.id}`,
-                        )
-                      }>
-                      {marketInfo.token0.symbol}
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      className={dropdownMenu.item}
-                      onClick={() =>
-                        navigateToDepositOrDeposit(
-                          `/earn?type=deposit&tokenId=${marketInfo.token1.id}&marketId=${poolInfo.data.panopticPool?.id}`,
-                        )
-                      }>
-                      {marketInfo.token1.symbol}
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Root>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger disabled={!enableWithdrawToken1 && !enableWithdrawToken0}>
-                    <Button
-                      variant={
-                        !enableWithdrawToken1 && !enableWithdrawToken0 ? 'default' : 'secondary'
-                      }
-                      className={'hover:cursor-pointer'}
-                      disabled={!enableWithdrawToken1 && !enableWithdrawToken0}>
-                      Withdraw
-                    </Button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content color="gray" variant="soft">
-                    <DropdownMenu.Item
-                      className={clsx(dropdownMenu.item, {
-                        'hover:cursor-default hover:bg-white': !enableWithdrawToken0,
-                      })}
-                      disabled={!enableWithdrawToken0}
-                      onClick={() => {
-                        if (!enableWithdrawToken0) return
-                        navigateToDepositOrDeposit(
-                          `/earn?type=withdraw&marketId=${poolInfo.data.panopticPool?.id}&tokenId=${marketInfo.token0.id}`,
-                        )
-                      }}>
-                      {marketInfo.token0.symbol}
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      className={clsx(dropdownMenu.item, {
-                        'hover:cursor-default hover:bg-white': !enableWithdrawToken1,
-                      })}
-                      disabled={!enableWithdrawToken1}
-                      onClick={() => {
-                        if (!enableWithdrawToken1) return
-                        navigateToDepositOrDeposit(
-                          `/earn?type=withdraw&marketId=${poolInfo.data.panopticPool?.id}&tokenId=${marketInfo.token1.id}`,
-                        )
-                      }}>
-                      {marketInfo.token1.symbol}
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Root>
-              </>
-            )}
           </div>
         </Flex>
       )
@@ -502,28 +439,28 @@ export default function MarketDetails() {
     return [
       {
         label: '7D Volume',
-        data: weeklyVolume,
-        loading: weeklyVolume === undefined,
+        data: weeklyVolume ?? '-',
+        loading: poolInfo.isLoading,
       },
       {
         label: 'Total value Locked',
-        data: tvl,
-        loading: tvl === undefined,
+        data: tvl ?? '-',
+        loading: isLoadingCollateralData,
       },
       {
         label: 'Pool Utilization',
-        data: poolUtilization,
-        loading: poolUtilization === undefined,
+        data: poolUtilization ?? '-',
+        loading: isLoadingCollateralData,
       },
       {
         label: '7D Fees',
-        data: weeklyFees,
-        loading: weeklyFees === undefined,
+        data: weeklyFees ?? '-',
+        loading: poolInfo.isLoading,
       },
     ].map((item, index) => {
       return <DataLabel data={item.data} label={item.label} key={index} isLoading={item.loading} />
     })
-  }, [tvl, poolUtilization, weeklyVolume, weeklyFees])
+  }, [weeklyVolume, tvl, isLoadingCollateralData, poolUtilization, weeklyFees, poolInfo.isLoading])
 
   const renderChart = useMemo(() => {
     if (poolInfo.isLoading) {
@@ -577,7 +514,7 @@ export default function MarketDetails() {
           ) : (
             <>
               <div className="h-[32px]">
-                <p className="text-xl font-semibold">{price}</p>
+                <p className="text-xl font-semibold">Price {price}</p>
               </div>
               <ResponsivePriceChart
                 data={chartData}
@@ -609,139 +546,62 @@ export default function MarketDetails() {
     }
   }, [poolInfo.isLoading, poolInfo.data, priceChartType, isAssetToken0, price])
 
-  const renderMobileActions = useMemo(() => {
+  const renderStakeTokensInfo = useMemo(() => {
     if (
-      !isMobile ||
       poolInfo.data === undefined ||
       poolInfo.data.panopticPool === undefined ||
-      poolInfo.data.panopticPool === null
-    )
+      poolInfo.data.panopticPool === null ||
+      poolInfo.data.bundle === undefined ||
+      poolInfo.data.bundle === null
+    ) {
       return
-    const marketInfo = poolInfo.data.panopticPool.underlyingPool
-    return (
-      <>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-1">
-            <Button
-              className="w-full"
-              variant="primary"
-              onClick={() => setOpenMobileDeposit(true)}
-              size="lg">
-              Deposit
-            </Button>
-          </div>
-          <div className="col-span-1">
-            <Button
-              className="w-full"
-              variant={!enableWithdrawToken1 && !enableWithdrawToken0 ? 'default' : 'secondary'}
-              onClick={() => {
-                if (!enableWithdrawToken1 && !enableWithdrawToken0) return
-                setOpenMobileWithdraw(true)
-              }}
-              size="lg">
-              Withdraw
-            </Button>
-          </div>
+    } else {
+      const token0Temp = poolInfo.data.panopticPool.underlyingPool.token0
+      const token1Temp = poolInfo.data.panopticPool.underlyingPool.token1
+      const currentEthPriceUSD = Number(poolInfo.data.bundle.ethPriceUSD)
+      const token0: TokenStakedInfo = {
+        tokenAddress: token0Temp.id,
+        tokenDecimals: token0Temp.decimals,
+        tokenName: token0Temp.name,
+        tokenSymbol: token0Temp.symbol,
+        tokenDerivedETH: token0Temp.derivedETH,
+        tokenLogoUri: findTokenInTokenList(getAddress(token0Temp.id))?.logoURI ?? '',
+        logoUri: findTokenInTokenList(getAddress(token0Temp.id))?.logoURI ?? '',
+        stakedAmount: userBalanceOfToken0,
+        hasDepositedCollateral: userBalanceOfToken0 > BigInt(0),
+      }
+      const token1: TokenStakedInfo = {
+        tokenAddress: token1Temp.id,
+        tokenDecimals: token1Temp.decimals,
+        tokenName: token1Temp.name,
+        tokenSymbol: token1Temp.symbol,
+        tokenDerivedETH: token1Temp.derivedETH,
+        tokenLogoUri: findTokenInTokenList(getAddress(token1Temp.id))?.logoURI ?? '',
+        logoUri: findTokenInTokenList(getAddress(token1Temp.id))?.logoURI ?? '',
+        stakedAmount: userBalanceOfToken1,
+        hasDepositedCollateral: userBalanceOfToken1 > BigInt(0),
+      }
+      return (
+        <div>
+          <p className={subSectionTitle}>Balance</p>
+          <TokenStakedTable
+            tokens={[token0, token1]}
+            panopticPoolId={marketAddress}
+            isLoading={poolInfo.isLoading}
+            ethPriceUSD={currentEthPriceUSD}
+          />
         </div>
-
-        <Sheet
-          isOpen={isOpenMobileDeposit}
-          onClose={() => setOpenMobileDeposit(false)}
-          detent="content-height">
-          <Sheet.Container>
-            <Sheet.Header />
-            <Sheet.Content>
-              <p className="text-lg font-semibold pb-3 text-center">Deposit</p>
-              <Sheet.Scroller>
-                <div className="flex flex-col gap-y-3 h-48 items-center justify-start">
-                  <div
-                    className={listItem.item}
-                    onClick={() =>
-                      navigateToDepositOrDeposit(
-                        `/earn?type=deposit&tokenId=${marketInfo.token0.id}&marketId=${poolInfo.data.panopticPool?.id}`,
-                      )
-                    }
-                    role="presentation">
-                    {marketInfo.token0.symbol}
-                  </div>
-                  <div
-                    className={listItem.item}
-                    onClick={() =>
-                      navigateToDepositOrDeposit(
-                        `/earn?type=deposit&tokenId=${marketInfo.token1.id}&marketId=${poolInfo.data.panopticPool?.id}`,
-                      )
-                    }
-                    role="presentation">
-                    {marketInfo.token1.symbol}
-                  </div>
-                </div>
-              </Sheet.Scroller>
-            </Sheet.Content>
-          </Sheet.Container>
-          <Sheet.Backdrop />
-        </Sheet>
-        <Sheet
-          isOpen={isOpenMobileWithdraw}
-          onClose={() => setOpenMobileWithdraw(false)}
-          detent="content-height">
-          <Sheet.Container>
-            <Sheet.Header />
-            <Sheet.Content>
-              <p className="text-lg font-semibold pb-3 text-center">Withdraw</p>
-              <Sheet.Scroller>
-                <div className="flex flex-col gap-y-3 h-48 items-center justify-start">
-                  <div
-                    className={clsx(listItem.item, {
-                      'hover:cursor-default hover:bg-white text-gray-300': !enableWithdrawToken0,
-                    })}
-                    onClick={() => {
-                      if (!enableWithdrawToken0) return
-                      navigateToDepositOrDeposit(
-                        `/earn?type=withdraw&marketId=${poolInfo.data.panopticPool?.id}&tokenId=${marketInfo.token0.id}`,
-                      )
-                    }}
-                    role="presentation">
-                    {marketInfo.token0.symbol}
-                  </div>
-                  <div
-                    className={clsx(listItem.item, {
-                      'hover:cursor-default hover:bg-white text-gray-300': !enableWithdrawToken1,
-                    })}
-                    onClick={() => {
-                      if (!enableWithdrawToken1) return
-                      navigateToDepositOrDeposit(
-                        `/earn?type=withdraw&marketId=${poolInfo.data.panopticPool?.id}&tokenId=${marketInfo.token1.id}`,
-                      )
-                    }}
-                    role="presentation">
-                    {marketInfo.token1.symbol}
-                  </div>
-                </div>
-              </Sheet.Scroller>
-            </Sheet.Content>
-          </Sheet.Container>
-          <Sheet.Backdrop />
-        </Sheet>
-      </>
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isMobile,
-    isOpenMobileDeposit,
-    isOpenMobileWithdraw,
-    poolInfo.data,
-    collateralData,
-    enableWithdrawToken0,
-    enableWithdrawToken1,
-  ])
+      )
+    }
+  }, [poolInfo.data, poolInfo.isLoading, userBalanceOfToken0, userBalanceOfToken1, marketAddress])
 
   return (
-    <Container size="4">
+    <Container size="3">
       <Flex direction="column" gap="8">
         {renderMarketBasicInfo}
         {renderChart}
-        {renderMobileActions}
         <div className="flex flex-row items-center justify-between">{renderPoolData}</div>
+        <div>{renderStakeTokensInfo}</div>
       </Flex>
     </Container>
   )

@@ -199,15 +199,15 @@ export const fetchHistoricalCommissionsWithTotalEarned = async (
   chainId: number,
   address: Address,
 ) => {
-  console.log('[fetchHistoricalCommissionsWithTotalEarned]')
+  // console.log('[fetchHistoricalCommissionsWithTotalEarned]')
   try {
     const { historicalCommissions, latestCommissionsData, totalEarned } =
       await fetchHistoricalCommissions(chainId, address)
 
-    console.log(
-      '[fetchHistoricalCommissionsWithTotalEarned] historicalCommissions: ',
-      historicalCommissions,
-    )
+    // console.log(
+    //   '[fetchHistoricalCommissionsWithTotalEarned] historicalCommissions: ',
+    //   historicalCommissions,
+    // )
 
     // To get total deposits, Sum deposited assets among all panoptic pool accounts for the connected account.
     const currentEthPrice = Number(latestCommissionsData.bundle?.ethPriceUSD)

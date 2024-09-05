@@ -20,6 +20,14 @@ export type TokenApyInfo = {
   collateralAddress?: Address
 } & TokenBasicInfo
 
+export type TokenStakedInfo = {
+  stakedAmount: bigint
+  hasDepositedCollateral: boolean
+  tokenDecimals: string
+  tokenDerivedETH: string
+  logoUri: string
+} & TokenBasicInfo
+
 export const getTokenInfo = (
   token: Token,
   ethPriceUSD: number,

@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 
 import type { TokenInfo } from '@uniswap/token-lists'
+import { TokenBasicInfo } from '~/utils/userAccount'
 
 function Placeholder({
   width = 20,
@@ -56,6 +57,41 @@ export const TokenIcon = ({
       <img
         src={tokenLogoUri}
         alt={token.symbol}
+        // The border-radius from rounded-full kinda cuts of the edges of square svgs, but whatever
+        className={clsx('rounded-full w-full h-full', className)}
+      />
+    </div>
+  )
+}
+
+export const TokenIcon2 = ({
+  token,
+  className,
+  width,
+  height,
+}: {
+  token?: TokenBasicInfo
+  className?: string
+  width?: number
+  height?: number
+}) => {
+  if (token === undefined || token.tokenLogoUri === undefined || !token.tokenLogoUri.length) {
+    return <Placeholder width={width} height={height} className={clsx('rounded-full', className)} />
+  }
+  const ipfsPrefix = 'ipfs://'
+  const tokenLogoUri = token.tokenLogoUri.includes(ipfsPrefix)
+    ? `https://ipfs.io/ipfs/${token.tokenLogoUri.slice(ipfsPrefix.length)}`
+    : token.tokenLogoUri
+  // console.log('tokenLogoUri: ', tokenLogoUri)
+  return (
+    <div
+      style={{
+        width,
+        height,
+      }}>
+      <img
+        src={tokenLogoUri}
+        alt={token.tokenSymbol}
         // The border-radius from rounded-full kinda cuts of the edges of square svgs, but whatever
         className={clsx('rounded-full w-full h-full', className)}
       />

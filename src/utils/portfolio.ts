@@ -3,12 +3,10 @@ import { calculate7DayAvgAPY, convertToAssets } from './collateral'
 import { tokenValueInUSD } from './price'
 import { findTokenInTokenList } from './tokens'
 import { Address, formatUnits, getAddress } from 'viem'
-import { PortfolioInfo } from '~/components/portfolioTable'
 
 export const formatPpaAccountsForPortfolioInfo = (
   panopticPoolAccounts: PanopticPoolAccount[],
   ethToUSD: number,
-  collateralTrackerAddressMaxWithdrawMap: Record<Address, bigint>,
 ) => {
   return panopticPoolAccounts.map((ppa) => {
     const token0Symbol = ppa.panopticPool.underlyingPool.token0.symbol
@@ -33,14 +31,12 @@ export const formatPpaAccountsForPortfolioInfo = (
           )
         : 0
 
-    const collateral0TotalAssets =
-      collateralTrackerAddressMaxWithdrawMap[ppa.panopticPool.collateral0.id as Address]
-    const collateral1TotalAssets =
-      collateralTrackerAddressMaxWithdrawMap[ppa.panopticPool.collateral1.id as Address]
+    const collateral0TotalAssets = ppa.panopticPool.collateral0.totalAssets
+    const collateral1TotalAssets = ppa.panopticPool.collateral1.totalAssets
 
     const collateral0Assets = convertToAssets(
       ppa.collateral0Shares,
-      collateral0TotalAssets.toString(),
+      collateral0TotalAssets,
       ppa.panopticPool.collateral0.totalShares,
     )
 
@@ -96,8 +92,8 @@ export const formatPpaAccountsForPortfolioInfo = (
       },
       collateral0Address: ppa.panopticPool.collateral0.id as Address,
       collateral1Address: ppa.panopticPool.collateral1.id as Address,
-      maxWithdrawToken0: collateral0TotalAssets,
-      maxWithdrawToken1: collateral1TotalAssets,
-    } as PortfolioInfo
+      maxWithdrawToken0: BigInt(collateral0TotalAssets),
+      maxWithdrawToken1: BigInt(collateral1TotalAssets),
+    }
   })
 }

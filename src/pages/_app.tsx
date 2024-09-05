@@ -8,6 +8,7 @@ import '~/app.css'
 import type { AppProps } from "next/app";
 import dynamic from 'next/dynamic'
 import { HiDotsHorizontal as DotsIcon } from "react-icons/hi";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   QueryCache,
   QueryClient,
@@ -172,6 +173,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={client}>
+        <ReactQueryDevtools initialIsOpen={false} />
         <RainbowKitProvider>
           <Theme grayColor="slate">
             <Header />

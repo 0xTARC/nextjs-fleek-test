@@ -7,9 +7,9 @@ import { DropdownMenu } from '@radix-ui/themes'
 import { useScreenDetector } from '~/hooks/useScreenDetector'
 import { MarketInfo } from '../market-info'
 import { convertMonetaryFormat } from '~/utils/price'
-import { useRouter } from 'next/router'
 import { Button } from '../button'
 import { Apy } from '../apy'
+import {useRouter} from 'next/router'
 
 type RowProps = {
   portfolioInfo: PortfolioInfo
@@ -78,16 +78,16 @@ export const Row: FC<RowProps> = ({ portfolioInfo }) => {
                     `/earn?type=deposit&tokenId=${portfolioInfo.token0.id}&marketId=${portfolioInfo.poolId}`,
                   )
                 }>
-                Deposit {portfolioInfo.maxWithdrawToken0 > BigInt(0) ? 'more' : ''}{' '}
+                Deposit {portfolioInfo.collateral0Assets > BigInt(0) ? 'more' : ''}{' '}
                 {portfolioInfo.token0WithLogoUri.symbol}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 className={clsx(dropdownMenu.item, {
-                  'hover:cursor-default': portfolioInfo.maxWithdrawToken0 <= BigInt(0),
+                  'hover:cursor-default': portfolioInfo.collateral0Assets <= BigInt(0),
                 })}
-                disabled={portfolioInfo.maxWithdrawToken0 <= BigInt(0)}
+                disabled={portfolioInfo.collateral0Assets <= BigInt(0)}
                 onClick={() => {
-                  if (portfolioInfo.maxWithdrawToken0 <= BigInt(0)) return
+                  if (portfolioInfo.collateral0Assets <= BigInt(0)) return
                   navigateToDepositOrDeposit(
                     `/earn?type=withdraw&marketId=${portfolioInfo.poolId}&tokenId=${portfolioInfo.token0.id}`,
                   )
@@ -101,16 +101,16 @@ export const Row: FC<RowProps> = ({ portfolioInfo }) => {
                     `/earn?type=deposit&tokenId=${portfolioInfo.token1.id}&marketId=${portfolioInfo.poolId}`,
                   )
                 }>
-                Deposit {portfolioInfo.maxWithdrawToken1 > BigInt(0) ? 'more' : ''}{' '}
+                Deposit {portfolioInfo.collateral1Assets > BigInt(0) ? 'more' : ''}{' '}
                 {portfolioInfo.token1WithLogoUri.symbol}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 className={clsx(dropdownMenu.item, {
-                  'hover:cursor-default': portfolioInfo.maxWithdrawToken1 <= BigInt(0),
+                  'hover:cursor-default': portfolioInfo.collateral1Assets <= BigInt(0),
                 })}
-                disabled={portfolioInfo.maxWithdrawToken1 <= BigInt(0)}
+                disabled={portfolioInfo.collateral1Assets <= BigInt(0)}
                 onClick={() => {
-                  if (portfolioInfo.maxWithdrawToken1 <= BigInt(0)) return
+                  if (portfolioInfo.collateral1Assets <= BigInt(0)) return
                   navigateToDepositOrDeposit(
                     `/earn?type=withdraw&marketId=${portfolioInfo.poolId}&tokenId=${portfolioInfo.token1.id}`,
                   )

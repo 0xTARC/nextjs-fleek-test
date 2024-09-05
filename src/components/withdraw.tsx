@@ -10,8 +10,8 @@ import { formatPpaAccountsForPortfolioInfo } from '~/utils/portfolio'
 import { TokenInput } from './token-input'
 import { DialogConfirmationWithdraw } from './dialog-confirm-withdraw'
 import { PortfolioInfo } from './portfolioTable'
-import { useRouter } from "next/router";
-import { useReadContracts } from 'wagmi'
+import { useRouter } from 'next/router'
+import { useReadContract } from 'wagmi'
 import { abi as CollateralTrackerAbi } from '~/abis/CollateralTracker'
 
 type WithdrawProps = {
@@ -37,8 +37,7 @@ export const Withdraw: FC<WithdrawProps> = ({
   )
   const [withdrawTokenAmount, setWithdrawTokenAmount] = useState<string>('')
   const ethPriceUSDFormatted = Number(ethPriceUSD.data?.bundle?.ethPriceUSD)
-  const [maximumWithdrawBalance, setMaximumWithdrawBalance] = useState<bigint>(BigInt(0))
-  const router = useRouter();
+  const router = useRouter()
 
   const userDepositedMarkets = useQuery({
     queryKey: ['vaultsWithDepositsFromAccount', chainId, address],
@@ -46,42 +45,16 @@ export const Withdraw: FC<WithdrawProps> = ({
     enabled: isConnected,
   })
 
-  const collateralTrackerAddressSet = useMemo(() => {
-    const addressSet = new Set<Address>()
-    if (userDepositedMarkets.data?.panopticPoolAccounts.length) {
-      userDepositedMarkets.data?.panopticPoolAccounts.forEach((ppa) => {
-        const collateral0Address = ppa.panopticPool.collateral0.id as Address
-        const collateral1Address = ppa.panopticPool.collateral1.id as Address
-        addressSet.add(collateral0Address)
-        addressSet.add(collateral1Address)
-      })
-    }
-    return addressSet
-  }, [userDepositedMarkets.data?.panopticPoolAccounts])
-
-  const { data: maxTokensWithdraw } = useReadContracts({
-    contracts: [...collateralTrackerAddressSet].map((collateralTrackerAddress) => {
-      return {
-        address: collateralTrackerAddress,
-        abi: CollateralTrackerAbi,
-        functionName: 'maxWithdraw',
-        args: [address ?? zeroAddress],
-      }
-    }),
+  const {
+    data: selectedTokenMaxWithdraw,
+    isLoading: selectedTokenMaxWithdrawIsLoading,
+    refetch: refetchMaxWithdraw,
+  } = useReadContract({
+    address: selectedToken?.collateralAddress ?? zeroAddress,
+    abi: CollateralTrackerAbi,
+    functionName: 'maxWithdraw',
+    args: [address ?? zeroAddress],
   })
-
-  const collateralTrackerAddressMaxWithdrawMap = useMemo(() => {
-    const temp: Record<Address, bigint> = {}
-    const collateralTrackerAddressArr = [...collateralTrackerAddressSet]
-    for (let i = 0; i < collateralTrackerAddressArr.length; i++) {
-      const collateralTrackerAddress = collateralTrackerAddressArr[i]
-      const maxTokenWithdraw = maxTokensWithdraw
-        ? (maxTokensWithdraw[i].result as bigint)
-        : BigInt(0)
-      temp[collateralTrackerAddress] = maxTokenWithdraw
-    }
-    return temp
-  }, [collateralTrackerAddressSet, maxTokensWithdraw])
 
   // get user's deposited pools
   const depositedMarkets = useMemo(() => {
@@ -89,7 +62,6 @@ export const Withdraw: FC<WithdrawProps> = ({
       ? formatPpaAccountsForPortfolioInfo(
           userDepositedMarkets.data?.panopticPoolAccounts as PanopticPoolAccount[],
           ethPriceUSDFormatted,
-          collateralTrackerAddressMaxWithdrawMap,
         )
           .sort((a, b) => b.amountUSD - a.amountUSD)
           .filter((portfolio: PortfolioInfo) => {
@@ -99,11 +71,7 @@ export const Withdraw: FC<WithdrawProps> = ({
             )
           })
       : []
-  }, [
-    ethPriceUSDFormatted,
-    userDepositedMarkets.data?.panopticPoolAccounts,
-    collateralTrackerAddressMaxWithdrawMap,
-  ])
+  }, [ethPriceUSDFormatted, userDepositedMarkets.data?.panopticPoolAccounts])
 
   useEffect(() => {
     if (
@@ -169,7 +137,6 @@ export const Withdraw: FC<WithdrawProps> = ({
               } as TokenApyInfo)
             : undefined,
         )
-        setMaximumWithdrawBalance(selectedToken !== undefined ? collateralAssets : BigInt(0))
       } else {
         router.push(`?type=withdraw`)
       }
@@ -210,7 +177,6 @@ export const Withdraw: FC<WithdrawProps> = ({
         paramTokenId={paramTokenId}
         setSelectedToken={setSelectedToken}
         selectedMarket={selectedMarket}
-        setMaximumWithdrawBalance={setMaximumWithdrawBalance}
         isLoadingParamMarket={isLoadingParamMarket}
       />
       <TokenInput
@@ -219,15 +185,15 @@ export const Withdraw: FC<WithdrawProps> = ({
         ethPriceUSD={Number(ethPriceUSD.data ? ethPriceUSD.data.bundle?.ethPriceUSD : 0)}
         value={withdrawTokenAmount}
         setValue={setWithdrawTokenAmount}
-        maxValue={maximumWithdrawBalance}
-        isLoading={isLoadingParamToken || isLoadingParamMarket}
+        maxValue={selectedTokenMaxWithdraw ?? 0n}
+        isLoading={selectedTokenMaxWithdrawIsLoading || isLoadingParamToken || isLoadingParamMarket}
       />
       <DialogConfirmationWithdraw
         selectedMarket={selectedMarket}
         selectedToken={selectedToken}
         withdrawTokenAmount={withdrawTokenAmount}
-        ethPriceUSD={Number(ethPriceUSD.data ? ethPriceUSD.data.bundle?.ethPriceUSD : 0)}
-        maxValue={maximumWithdrawBalance}
+        maxValue={selectedTokenMaxWithdraw ?? 0n}
+        onWithdrawSuccess={refetchMaxWithdraw}
         isLoading={isLoadingParamToken || isLoadingParamMarket}
       />
     </Card>

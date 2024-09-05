@@ -108,16 +108,6 @@ export function CreateAndInitializeUniPoolForm({
           writeCreateAndInitializePool.isPending ||
           waitCreateAndInitializePool.isLoading
         }
-        unsafeDisable={
-          address === undefined ||
-          initialQuotePrice === '' ||
-          !createAndInitializePoolAction.write ||
-          createAndInitializePoolAction.isLoading ||
-          createAndInitializePoolAction.isSuccess ||
-          simulateCreateAndInitializePool.error != null ||
-          writeCreateAndInitializePool.isPending ||
-          waitCreateAndInitializePool.isLoading
-        }
         onClick={() => createAndInitializePoolAction.write?.()}
         size="lg"
         className="w-full rounded-xl font-light mt-4">

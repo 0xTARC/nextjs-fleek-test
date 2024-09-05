@@ -1,6 +1,6 @@
 import { Address, getAddress, zeroAddress } from 'viem'
 
-import { abi as CollateralTrackerAbi } from '../../abis/CollateralTracker'
+import { useMemo } from 'react'
 import {
   useAccount,
   useSimulateContract,
@@ -8,9 +8,9 @@ import {
   useWriteContract,
 } from 'wagmi'
 import { TokenApyInfo } from '~/utils/userAccount'
+import { abi as CollateralTrackerAbi } from '../../abis/CollateralTracker'
 import { useTokenAllowance } from './useTokenAllowance'
 import { useTokenApprove } from './useTokenApprove'
-import { useMemo } from 'react'
 
 export const useDepositLiquidity = (
   collateralAddress: Address,
@@ -33,15 +33,14 @@ export const useDepositLiquidity = (
   }, [tokenAllowance, depositAmount])
 
   const {
-    write: writeContractApprove,
-    isLoading: isPendingApprove,
-    data: approveData,
-    wait: approveWait,
+    write: writeApprove,
+    simulate: simulateApprove,
+    wait: waitApprove,
   } = useTokenApprove(token, collateralAddress, needApprove, () => {
     tokenAllowance.refetch()
   })
 
-  const { data: depositData } = useSimulateContract({
+  const simulateDeposit = useSimulateContract({
     address: collateralAddress,
     abi: CollateralTrackerAbi,
     functionName: 'deposit',
@@ -56,14 +55,10 @@ export const useDepositLiquidity = (
     },
   })
 
-  const {
-    writeContract: writeContractDeposit,
-    isPending: isPendingDeposit,
-    data: depositHash,
-  } = useWriteContract()
+  const writeDeposit = useWriteContract()
 
   const depositWait = useWaitForTransactionReceipt({
-    hash: depositHash,
+    hash: writeDeposit.data,
     query: {
       meta: {
         successMessage: `Successfully deposit ${token?.tokenSymbol}`,
@@ -73,11 +68,31 @@ export const useDepositLiquidity = (
   })
 
   return {
-    write: needApprove ? writeContractApprove : writeContractDeposit,
-    isLoading:
-      isPendingDeposit || isPendingApprove || approveWait.isLoading || depositWait.isLoading,
-    data: needApprove ? approveData : depositData,
-    wait: needApprove ? approveWait : depositWait,
+    write: needApprove
+      ? () =>
+          simulateApprove.data?.request != null
+            ? writeApprove.writeContract(simulateApprove.data?.request)
+            : null
+      : () =>
+          simulateDeposit.data?.request != null
+            ? writeDeposit.writeContract(simulateDeposit.data?.request)
+            : null,
+    isReady:
+      simulateApprove.isLoading ||
+      writeApprove.isPending ||
+      simulateApprove.error != null ||
+      waitApprove.isLoading ||
+      simulateDeposit.isLoading ||
+      simulateDeposit.error != null ||
+      writeDeposit.isPending ||
+      depositWait.isLoading,
+    wait: needApprove ? waitApprove : depositWait,
     actionLabel: needApprove ? `Approve ${token?.tokenSymbol}` : `Deposit ${token?.tokenSymbol}`,
+    errors: [
+      simulateApprove.error,
+      writeApprove.error,
+      simulateDeposit.error,
+      writeDeposit.error,
+    ].filter((error) => error !== null),
   }
 }
