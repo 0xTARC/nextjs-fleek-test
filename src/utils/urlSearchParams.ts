@@ -5,9 +5,14 @@ export const handleUrlSearchPramUpdate = (
   key: string,
   value: string,
 ) => {
-  const newQuery = new URLSearchParams()
+  const newQuery = new URLSearchParams(router.asPath.split('?')[1] || '')
   newQuery.set(key, value)
-  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
+  const newUrl = `${
+    router.asPath.includes("?")
+      ? router.pathname + `?${newQuery.toString()}`
+      : router.pathname + `?${key}=${value}`
+  }`
+  window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
 }
 
 export const handleUrlSearchPramPreserveUpdate = (
@@ -18,7 +23,12 @@ export const handleUrlSearchPramPreserveUpdate = (
 ) => {
   const newQuery = new URLSearchParams(query)
   newQuery.set(key, value)
-  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
+  const newUrl = `${
+    router.asPath.includes("?")
+      ? router.pathname + `?${newQuery.toString()}`
+      : router.pathname + `?${key}=${value}`
+  }`
+  window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
 }
 
 export const handleUrlSearchPramRemoveKeys = (
@@ -28,5 +38,10 @@ export const handleUrlSearchPramRemoveKeys = (
 ) => {
   const newQuery = new URLSearchParams(query)
   keys.forEach((key) => newQuery.delete(key))
-  router.push(`${router.pathname}?${newQuery.toString()}`, undefined, {shallow: true})
+  const newUrl = `${
+    router.asPath.includes("?")
+      ? router.pathname + `?${newQuery.toString()}`
+      : router.pathname
+  }`
+  window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
 }

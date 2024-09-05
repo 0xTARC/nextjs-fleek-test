@@ -38,7 +38,7 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
   tokenRelatedVaultInfo,
   setSelectedMarket,
   selectedMarket,
-  paramTokenId,
+  // paramTokenId,
   paramMarketId,
   isLoadingParamToken,
 }) => {
@@ -47,11 +47,9 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
   const [step, setStep] = useState<number>(1)
   const router = useRouter()
   const query = new URLSearchParams(router.asPath.split("?")[1] || "")
-  console.log('query: ', query)
   const type = query.get('type')
 
   const selectToken = (token: TokenApyInfo) => {
-    let url = `?type=${type}`
     if (isReSelectedTokenAndMarket && selectedToken !== undefined) {
       setSelectedToken(undefined)
       setIsReSelectedTokenAndMarket(false)
@@ -61,17 +59,26 @@ export const DialogSelectToken: FC<DialogSelectTokenProps> = ({
     }
 
     setSelectedToken(token)
-    // TODO: these router.pushes are forcing re-renders and causing step to reset
-    // try what's mentioned in this issue https://github.com/vercel/next.js/discussions/18072
-    url = `${url}&tokenId=${token.tokenAddress}`
-    router.push(url, undefined, {shallow:true})
+    const newUrl = `${
+      router.asPath.includes("?")
+        ? router.pathname + `?${query.toString()}` + `&tokenId=${token.tokenAddress}`
+        : router.pathname + `?tokenId=${token.tokenAddress}`
+    }`
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
     setStep(2)
   }
 
   const clearSelectedToken = () => {
     setSelectedToken(undefined)
     setSelectedMarket(undefined)
-    router.push(`?type=${type}`, undefined, {shallow: true})
+    const newQuery = new URLSearchParams(query)
+    newQuery.delete('tokenId')
+    newQuery.delete('marketId')
+    if (type) {
+      newQuery.set('type', type)
+    }
+    const newUrl = `${router.pathname}?${newQuery.toString()}`
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
     setStep(1)
   }
 

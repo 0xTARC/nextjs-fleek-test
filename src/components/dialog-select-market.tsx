@@ -46,7 +46,6 @@ export const DialogSelectMarket: FC<DialogSelectMarketProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const router = useRouter()
   const query = new URLSearchParams(router.asPath.split("?")[1] || "")
-  console.log('query: ', query)
   const type = query.get('type')
 
   const dialogContent = useMemo(() => {
@@ -61,7 +60,6 @@ export const DialogSelectMarket: FC<DialogSelectMarketProps> = ({
                 role="presentation"
                 className="hover:bg-gray-100 hover:cursor-pointer flex flex-row items-center justify-between gap-x-2 p-4 border-t border-gray-200"
                 onClick={() => {
-                  let url = `?type=${type}`
                   if (isReSelectedTokenAndMarket && selectedMarket !== undefined) {
                     setSelectedMarket(undefined)
                     setIsReSelectedTokenAndMarket(false)
@@ -79,8 +77,10 @@ export const DialogSelectMarket: FC<DialogSelectMarketProps> = ({
                     hasCollateral0Shares: market.collateral0Shares > 0,
                     hasCollateral1Shares: market.collateral0Shares > 0,
                   })
-                  url = `${url}&marketId=${market.poolId}`
-                  router.push(url, undefined, {shallow:true})
+                  const newQuery = new URLSearchParams(query)
+                  newQuery.set('marketId', market.poolId)
+                  const newUrl = `${router.pathname}?${newQuery.toString()}`
+                  window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
                   setPortfolio(market)
                   setStep(2)
                 }}>
@@ -160,7 +160,14 @@ export const DialogSelectMarket: FC<DialogSelectMarketProps> = ({
                 setStep(1)
                 setSelectedToken(undefined)
                 setSelectedMarket(undefined)
-                router.push(`?type=${type}`,undefined,{shallow: true})
+                const newQuery = new URLSearchParams(query)
+                newQuery.delete('tokenId')
+                newQuery.delete('marketId')
+                if (type) {
+                  newQuery.set('type', type)
+                }
+                const newUrl = `${router.pathname}?${newQuery.toString()}`
+                window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
               }}
               role="presentation"
               className="hover:bg-gray-100 hover:cursor-pointer flex flex-row items-center justify-start gap-x-2 p-4">
